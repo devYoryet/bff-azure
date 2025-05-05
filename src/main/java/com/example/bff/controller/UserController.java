@@ -21,6 +21,31 @@ public class UserController {
     private UserService userService;
 
     /**
+     * Eliminar un usuario
+     */
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long userId) {
+        try {
+            LOGGER.info("Recibida solicitud para eliminar usuario: " + userId);
+            boolean deleted = userService.deleteUser(userId);
+
+            if (deleted) {
+                return new ResponseEntity<>(Map.of("success", true, "message", "Usuario eliminado correctamente"),
+                        HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(Map.of("success", false, "message", "No se pudo eliminar el usuario"),
+                        HttpStatus.BAD_REQUEST);
+            }
+        } catch (Exception e) {
+            LOGGER.severe("Error al eliminar usuario: " + e.getMessage());
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Error al eliminar usuario");
+            errorResponse.put("message", e.getMessage());
+            return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * Obtener todos los usuarios
      */
     @GetMapping
