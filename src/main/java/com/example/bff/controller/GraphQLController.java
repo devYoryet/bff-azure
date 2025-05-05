@@ -70,7 +70,20 @@ public class GraphQLController {
                             response);
                 }
 
-                // Otros tipos de mutaciones...
+                // Detectar eliminación de usuario
+                else if (query.contains("deleteUser")) {
+                    eventGridService.publishEvent(
+                            "UserDeleted",
+                            "graphql/users/delete",
+                            response);
+                }
+                // Detectar eliminación de rol
+                else if (query.contains("deleteRole")) {
+                    eventGridService.publishEvent(
+                            "RoleDeleted",
+                            "graphql/roles/delete",
+                            response);
+                }
             }
 
             return new ResponseEntity<>(response, HttpStatus.OK);
