@@ -9,6 +9,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
@@ -17,7 +18,9 @@ public class UserService {
 
     @Autowired
     private RestTemplate restTemplate;
-    
+    @Autowired
+    private EventGridService eventGridService;
+
     @Value("${azure.function.url.get-allusers}")
     private String getAllUsersUrl;
     
@@ -42,10 +45,19 @@ public class UserService {
      */
     public User createUser(User user) {
         HttpEntity<User> requestEntity = new HttpEntity<>(user);
-        return restTemplate.postForObject(createUserUrl, requestEntity, User.class);
+        User createdUser = restTemplate.postForObject(createUserUrl, requestEntity, User.class);
+
+       // return restTemplate.postForObject(createUserUrl, requestEntity, User.class);
+
+        // Publicar evento
+        eventGridService.publishEvent(
+            "UserCreated", 
+            "users/create", 
+            createdUser
+        );
+        
+        return createdUser;
+    }
     }
     
-    /**
-     * Implementar más métodos según sea necesario
-     */
-}
+

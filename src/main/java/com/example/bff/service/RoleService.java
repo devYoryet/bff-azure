@@ -9,6 +9,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
@@ -17,6 +18,8 @@ public class RoleService {
 
     @Autowired
     private RestTemplate restTemplate;
+    @Autowired
+    private EventGridService eventGridService;
     
     @Value("${azure.function.url.get-allroles}")
     private String getAllRolesUrl;
@@ -40,13 +43,22 @@ public class RoleService {
         return response.getBody();
     }
     
-    /**
-     * Crea un nuevo rol
-     */
-    public Role createRole(Role role) {
-        HttpEntity<Role> requestEntity = new HttpEntity<>(role);
-        return restTemplate.postForObject(createRoleUrl, requestEntity, Role.class);
-    }
+        /**
+         * Crea un nuevo rol
+         */
+        public Role createRole(Role role) {
+            HttpEntity<Role> requestEntity = new HttpEntity<>(role);
+            Role createdRole = restTemplate.postForObject(createRoleUrl, requestEntity, Role.class);
+
+            //return restTemplate.postForObject(createRoleUrl, requestEntity, Role.class);
+            eventGridService.publishEvent(
+                "RoleCreated", 
+                "roles/create", 
+                createdRole
+            );
+            
+            return createdRole;
+        }
     
     /**
      * Obtiene usuarios por rol
