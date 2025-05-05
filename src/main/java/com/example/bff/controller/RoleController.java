@@ -8,11 +8,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
 
 @RestController
 @RequestMapping("/api/roles")
 public class RoleController {
+    private static final Logger LOGGER = Logger.getLogger(RoleController.class.getName());
 
     @Autowired
     private RoleService roleService;
@@ -21,12 +25,17 @@ public class RoleController {
      * Obtener todos los roles
      */
     @GetMapping
-    public ResponseEntity<List<Role>> getAllRoles() {
+    public ResponseEntity<?> getAllRoles() {
         try {
+            LOGGER.info("Recibida solicitud para obtener todos los roles");
             List<Role> roles = roleService.getAllRoles();
             return new ResponseEntity<>(roles, HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            LOGGER.severe("Error al obtener roles: " + e.getMessage());
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Error al obtener roles");
+            errorResponse.put("message", e.getMessage());
+            return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -34,12 +43,18 @@ public class RoleController {
      * Crear un nuevo rol
      */
     @PostMapping
-    public ResponseEntity<Role> createRole(@RequestBody Role role) {
+    public ResponseEntity<?> createRole(@RequestBody Role role) {
         try {
+            LOGGER.info("Recibida solicitud para crear rol: " + role.getRoleName());
             Role createdRole = roleService.createRole(role);
             return new ResponseEntity<>(createdRole, HttpStatus.CREATED);
         } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            LOGGER.severe("Error al crear rol: " + e.getMessage());
+            e.printStackTrace();
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Error al crear rol");
+            errorResponse.put("message", e.getMessage());
+            return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -47,16 +62,17 @@ public class RoleController {
      * Obtener usuarios por rol
      */
     @GetMapping("/{roleId}/users")
-    public ResponseEntity<List<User>> getUsersByRoleId(@PathVariable Long roleId) {
+    public ResponseEntity<?> getUsersByRoleId(@PathVariable Long roleId) {
         try {
+            LOGGER.info("Recibida solicitud para obtener usuarios del rol ID: " + roleId);
             List<User> users = roleService.getUsersByRoleId(roleId);
             return new ResponseEntity<>(users, HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            LOGGER.severe("Error al obtener usuarios por rol: " + e.getMessage());
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Error al obtener usuarios por rol");
+            errorResponse.put("message", e.getMessage());
+            return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
-    /**
-     * Añadir más endpoints según sea necesario
-     */
 }
