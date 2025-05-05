@@ -22,6 +22,31 @@ public class RoleController {
     private RoleService roleService;
 
     /**
+     * Eliminar un rol
+     */
+    @DeleteMapping("/{roleId}")
+    public ResponseEntity<?> deleteRole(@PathVariable Long roleId) {
+        try {
+            LOGGER.info("Recibida solicitud para eliminar rol: " + roleId);
+            boolean deleted = roleService.deleteRole(roleId);
+
+            if (deleted) {
+                return new ResponseEntity<>(Map.of("success", true, "message", "Rol eliminado correctamente"),
+                        HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(Map.of("success", false, "message", "No se pudo eliminar el rol"),
+                        HttpStatus.BAD_REQUEST);
+            }
+        } catch (Exception e) {
+            LOGGER.severe("Error al eliminar rol: " + e.getMessage());
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Error al eliminar rol");
+            errorResponse.put("message", e.getMessage());
+            return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * Obtener todos los roles
      */
     @GetMapping
