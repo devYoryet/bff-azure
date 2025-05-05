@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Service
@@ -19,35 +18,18 @@ public class EventGridService {
 
     private final RestTemplate restTemplate;
 
-    // Proporciona valores predeterminados en caso de que no estén en
-    // application.properties
-    @Value("${azure.event.grid.endpoint:https://evento1.eastus2-1.eventgrid.azure.net/api/events}")
+    @Value("${azure.event.grid.endpoint}")
     private String eventGridEndpoint;
 
-    @Value("${azure.event.grid.key:1akKzfiKxGIffXkVvohg6Ke0hcMsou59OWSJpwYPd6v3DYpe3CueJQQJ99BEACHYHv6XJ3w3AAABAZEG1vsr}")
+    @Value("${azure.event.grid.key}")
     private String eventGridKey;
 
     public EventGridService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
-        // Log para verificar que el servicio se inicializó correctamente
-        LOGGER.info("EventGridService inicializado con endpoint: " + eventGridEndpoint);
     }
 
-    public boolean publishEvent(String eventType, String subject, Object data) {
+    public void publishEvent(String eventType, String subject, Object data) {
         try {
-            LOGGER.info("Intentando publicar evento: " + eventType);
-
-            // Validar que tengamos los datos necesarios
-            if (eventGridEndpoint == null || eventGridEndpoint.isEmpty()) {
-                LOGGER.severe("Error: eventGridEndpoint no está configurado");
-                return false;
-            }
-
-            if (eventGridKey == null || eventGridKey.isEmpty()) {
-                LOGGER.severe("Error: eventGridKey no está configurado");
-                return false;
-            }
-
             List<Map<String, Object>> events = new ArrayList<>();
             Map<String, Object> event = new HashMap<>();
 
@@ -66,14 +48,10 @@ public class EventGridService {
 
             HttpEntity<List<Map<String, Object>>> requestEntity = new HttpEntity<>(events, headers);
 
-            LOGGER.info("Enviando evento a: " + eventGridEndpoint);
             restTemplate.postForEntity(eventGridEndpoint, requestEntity, String.class);
-            LOGGER.info("Evento publicado exitosamente: " + eventType);
-            return true;
+            LOGGER.info("Event published successfully: " + eventType);
         } catch (Exception e) {
-            LOGGER.severe("Error publicando evento: " + e.getMessage());
-            e.printStackTrace();
-            return false;
+            LOGGER.severe("Error publishing event: " + e.getMessage());
         }
     }
 }
